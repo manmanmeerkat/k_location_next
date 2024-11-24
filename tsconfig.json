@@ -1,27 +1,27 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
+    "target": "ESNext",  // 最新の ECMAScript 構文をサポート
+    "lib": ["dom", "dom.iterable", "esnext"],  // 対応するライブラリ
+    "allowJs": true,  // JavaScriptファイルを許可
+    "skipLibCheck": true,  // 型定義ファイルの検証をスキップ
+    "strict": true,  // 厳格な型検査を有効にする
+    "noEmit": true,  // コンパイル時にJSファイルを出力しない
+    "esModuleInterop": true,  // ESモジュールのインポートを許可
+    "module": "ESNext",  // モジュールの形式をESNextに設定
+    "moduleResolution": "bundler",  // バンドラに合わせたモジュール解決方法
+    "resolveJsonModule": true,  // JSONのモジュールインポートを許可
+    "isolatedModules": true,  // 各ファイルを独立したモジュールとして扱う
+    "jsx": "preserve",  // JSXをそのまま保存する
+    "incremental": true,  // 増分コンパイルを有効にする
     "plugins": [
       {
-        "name": "next"
+        "name": "next"  // Next.js 用のプラグイン
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"]  // エイリアス設定
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],  // インクルードするファイル
+  "exclude": ["node_modules"]  // 除外するファイル
 }

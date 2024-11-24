@@ -1,0 +1,17 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Product {
+  id              Int      @id @default(autoincrement()) // 自動インクリメントのID
+  productNumber   String   @unique                      // 一意制約を付けたproduct_number
+  locationNumber  String                                // location_number
+  createdAt       DateTime @default(now())              // 作成日時
+  updatedAt       DateTime @updatedAt                   // 更新日時
+}
+
