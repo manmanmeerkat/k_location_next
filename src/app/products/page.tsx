@@ -3,6 +3,7 @@
 import { supabase } from "../../../utils/supabase";
 import { useState, useEffect } from "react";
 import "../globals.css";
+import Header from "../components/Header";
 
 type Product = {
   id: number;
@@ -69,16 +70,17 @@ export default function ProductsPage() {
     }
   };
 
-  return (
+  return (<>
+    <Header />
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Products</h1>
+      <h1 className="text-2xl font-bold mb-4">品番検索</h1>
 
       {/* 検索ボックス */}
       <div className="mb-4">
         <input
           type="text"
           className="w-full px-4 py-2 border border-gray-300 rounded shadow-sm"
-          placeholder="Search by Product Number..."
+          placeholder="検索する品番を入力"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -89,8 +91,8 @@ export default function ProductsPage() {
           <thead>
             <tr className="bg-gray-200">
               <th className="px-4 py-2 border">ID</th>
-              <th className="px-4 py-2 border">Product Number</th>
-              <th className="px-4 py-2 border">Location Number</th>
+              <th className="px-4 py-2 border">品番</th>
+              <th className="px-4 py-2 border">ロケーション番号</th>
             </tr>
           </thead>
           <tbody>
@@ -139,5 +141,6 @@ export default function ProductsPage() {
         Page {currentPage} of {totalPages}
       </p>
     </div>
+    </>
   );
 }
