@@ -6,7 +6,7 @@ export async function GET() {
     const products = await prisma.product.findMany();
     return NextResponse.json(products);
   } catch {
-    // エラーの詳細はログとして記録し、クライアントには詳細を公開しないようにする
+    // エラーの詳細は記録するが、クライアントには詳細を送らない
     console.error('Failed to fetch products from the database');
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
