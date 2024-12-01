@@ -1,17 +1,12 @@
 // src/components/Header.tsx
 
 import Link from 'next/link';
-import { FaHome, FaBox } from 'react-icons/fa';  // アイコンを追加
-import { useState } from 'react';  // useStateを追加
-import OverflowList from '../overflow/page';
+import { FaHome, FaBox, FaGg } from 'react-icons/fa';  // アイコンを追加
 
 export default function Header() {
-  const [isOverflowVisible, setIsOverflowVisible] = useState(false); // オーバーフロー一覧の表示/非表示を管理
 
   // オーバーフロー一覧の表示/非表示を切り替える関数
-  const handleToggleOverflow = () => {
-    setIsOverflowVisible(!isOverflowVisible);
-  };
+ 
 
   return (
     <header className="bg-gradient-to-r from-indigo-600 to-indigo-900 text-white shadow-xl py-4">
@@ -36,12 +31,11 @@ export default function Header() {
             <li>
               <Link 
                 href="/overflow" 
-                onClick={handleToggleOverflow} 
                 aria-label="オーバーフローページへ移動" 
                 className="text-lg hover:text-pink-400 transition-all duration-300 flex items-center space-x-2"
               >
-                <FaHome size={20} />
-                <span>在庫確認</span>
+                <FaGg size={20} />
+                <span>オーバーフロー</span>
               </Link>
             </li>
           </ul>
@@ -49,7 +43,6 @@ export default function Header() {
       </div>
 
       {/* オーバーフロー一覧が表示される部分 */}
-      {isOverflowVisible && <OverflowList />}
     </header>
   );
 }
