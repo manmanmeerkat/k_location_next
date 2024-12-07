@@ -11,6 +11,7 @@ model Product {
   id              Int      @id @default(autoincrement()) // 自動インクリメントのID
   productNumber   String   @unique                      // 一意制約を付けたproduct_number
   locationNumber  String                                // location_number
+  boxType         String                                // 箱の種類を表すフィールド
   createdAt       DateTime @default(now())              // 作成日時
   updatedAt       DateTime @updatedAt                   // 更新日時
 }
