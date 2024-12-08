@@ -1,19 +1,8 @@
-"use client";
-
 import React, { useState } from "react";
-import { 
-  AlertCircle, 
-  Box, 
-  Layers, 
-  RefreshCw, 
-  Save, 
-  X, 
-  Info, 
-  CheckCircle2 
-} from "lucide-react";
+import { supabase } from "../../../utils/supabase";
+import { XCircle, CheckCircle, Layers, Package, ClipboardList } from "lucide-react";
 
 type ProductDetail = {
-  id: number;
   product_number: string;
   location_number: string;
   box_type: string;
@@ -24,34 +13,6 @@ type ModalProps = {
   onClose: () => void;
 };
 
-// データの型を定義
-type DatabaseData = {
-  product_number: string;
-  location_number?: string;
-  overflow_quantity?: number;
-  registered_at?: string;
-  status?: string;
-  requested_at?: string;
-  requested_by?: string;
-};
-
-// Mock function to simulate database interaction
-const mockDatabaseInsert = async (table: string, data: DatabaseData) => {
-  // Simulating network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  console.log(`Mocking insert into ${table}:`, data);
-  
-  // Randomly simulate success or failure
-  const isSuccess = Math.random() > 0.2;
-  
-  if (!isSuccess) {
-    throw new Error(`Failed to insert data into ${table}`);
-  }
-  
-  return { error: null };
-};
-
 const ProductModal = ({ product, onClose }: ModalProps) => {
   const [isOverflowModalOpen, setIsOverflowModalOpen] = useState(false);
   const [overflowQuantity, setOverflowQuantity] = useState<number>(0);
@@ -59,29 +20,37 @@ const ProductModal = ({ product, onClose }: ModalProps) => {
 
   if (!product) return null;
 
+  // 在庫確認依頼
   const handleStockRequest = async () => {
     const confirmAction = window.confirm("この品番の在庫確認を依頼しますか？");
     if (!confirmAction) return;
 
-    try {
-      const { error } = await mockDatabaseInsert("stock_requests", {
+    // 認証ユーザーの情報を取得
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      console.error("ユーザーが認証されていません:", error);
+      alert("ユーザーが認証されていません。");
+      return;
+    }
+    // 在庫確認依頼の登録
+    const { error: insertError } = await supabase.from("stock_requests").insert([
+      {
         product_number: product.product_number,
         requested_at: new Date().toISOString(),
         status: "pending",
-        requested_by: "default_user",
-      });
+        requested_by: user.user_metadata.displayName, // ユーザーのメールアドレスを使用
+      },
+    ]);
 
-      if (error) {
-        throw error;
-      }
-
-      alert("在庫確認依頼を登録しました。");
-    } catch (error) {
-      console.error("Error registering stock request:", error);
+    if (insertError) {
+      console.error("Error registering stock request:", insertError);
       alert("在庫確認依頼の登録に失敗しました。");
+    } else {
+      alert("在庫確認依頼を登録しました。");
     }
   };
 
+  // オーバーフロー登録
   const handleOverflowSubmit = async () => {
     const confirmAction = window.confirm("このオーバーフローを登録しますか？");
     if (!confirmAction) return;
@@ -90,150 +59,131 @@ const ProductModal = ({ product, onClose }: ModalProps) => {
 
     const registeredAt = new Date().toISOString();
 
-    try {
-      const { error } = await mockDatabaseInsert("overflow_management", {
+    const { error } = await supabase.from("overflow_management").insert([
+      {
         product_number: product.product_number,
         location_number: product.location_number,
         overflow_quantity: overflowQuantity,
         registered_at: registeredAt,
-      });
+      },
+    ]);
 
-      if (error) {
-        throw error;
-      }
+    setIsSubmitting(false);
 
+    if (error) {
+      console.error("Error registering overflow:", error);
+      alert("オーバーフローの登録に失敗しました。");
+    } else {
       alert("オーバーフローを登録しました。");
       setOverflowQuantity(0);
       setIsOverflowModalOpen(false);
-    } catch (error) {
-      console.error("Error registering overflow:", error);
-      alert("オーバーフローの登録に失敗しました。");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg p-6 shadow-lg w-1/3 relative">
-        <button 
-          onClick={onClose} 
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+      <div className="bg-white rounded-lg p-6 shadow-lg w-96 relative">
+        {/* 閉じるボタン */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
         >
-          <X size={24} />
+          <XCircle size={24} />
         </button>
-        <h2 className="text-2xl font-bold mb-4 flex items-center">
-          <Info className="mr-2 text-blue-500" /> 
-          製品詳細
+
+        <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
+          <Layers size={24} className="text-indigo-500" />
+          <span>製品詳細</span>
         </h2>
-        <div className="space-y-2">
-          <p className="flex items-center">
-            <Box className="mr-2 text-gray-500" />
-            <strong>ID:</strong> {product.id}
+
+        <div className="space-y-4">
+          <p className="flex items-center space-x-2">
+            <Layers size={18} className="text-blue-500" />
+            <span className="font-bold">品番:</span> <span>{product.product_number}</span>
           </p>
-          <p className="flex items-center">
-            <Layers className="mr-2 text-gray-500" />
-            <strong>品番:</strong> {product.product_number}
+          <p className="flex items-center space-x-2">
+            <Package size={18} className="text-green-500" />
+            <span className="font-bold">ロケーション番号:</span> <span>{product.location_number}</span>
           </p>
-          <p className="flex items-center">
-            <RefreshCw className="mr-2 text-gray-500" />
-            <strong>ロケーション番号:</strong> {product.location_number}
-          </p>
-          <p className="flex items-center">
-            <AlertCircle className="mr-2 text-gray-500" />
-            <strong>箱種:</strong> {product.box_type}
+          <p className="flex items-center space-x-2">
+            <ClipboardList size={18} className="text-orange-500" />
+            <span className="font-bold">箱種:</span> <span>{product.box_type}</span>
           </p>
         </div>
 
-        <div className="mt-6 flex space-x-2">
+        {/* ボタンセクション */}
+        <div className="mt-6 flex flex-col gap-3">
           <button
-            className="flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center justify-center space-x-2"
             onClick={handleStockRequest}
           >
-            <CheckCircle2 className="mr-2" />
-            在庫確認依頼
+            <CheckCircle size={18} />
+            <span>在庫確認依頼</span>
           </button>
 
           <button
-            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center space-x-2"
             onClick={() => setIsOverflowModalOpen(true)}
           >
-            <Save className="mr-2" />
-            オーバーフロー登録
+            <ClipboardList size={18} />
+            <span>オーバーフロー登録</span>
           </button>
         </div>
+      </div>
 
-      {/* オーバーフロー登録用モーダル */}
+      {/* オーバーフロー入力モーダル */}
       {isOverflowModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-60">
-          <div className="bg-white rounded-lg p-6 shadow-lg w-1/3">
-            <h2 className="text-2xl font-bold mb-4 flex items-center">
-              <AlertCircle className="mr-2 text-blue-500" />
-              オーバーフロー数量の入力
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white rounded-lg p-6 shadow-lg w-96 relative">
+            <button
+              onClick={() => setIsOverflowModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
+            >
+              <XCircle size={24} />
+            </button>
+
+            <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
+              <ClipboardList size={24} className="text-indigo-500" />
+              <span>オーバーフロー数量の入力</span>
             </h2>
 
-            <div className="mt-4 space-y-2">
-              <p className="flex items-center">
-                <Layers className="mr-2 text-gray-500" />
-                <strong>品番:</strong> {product.product_number}
-              </p>
-              <p className="flex items-center">
-                <RefreshCw className="mr-2 text-gray-500" />
-                <strong>ロケーション番号:</strong> {product.location_number}
-              </p>
-              <p className="flex items-center">
-                <Box className="mr-2 text-gray-500" />
-                <strong>箱種:</strong> {product.box_type}
-              </p>
-            </div>
+            <label
+              htmlFor="overflowQuantity"
+              className="block text-sm font-medium text-gray-700"
+            >
+              オーバーフロー数量
+            </label>
+            <input
+              id="overflowQuantity"
+              type="number"
+              value={overflowQuantity}
+              onChange={(e) => setOverflowQuantity(Number(e.target.value))}
+              className="mt-2 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              min={0}
+              placeholder="オーバーフロー数量を入力"
+            />
 
-            <div className="mt-4">
-              <label htmlFor="overflowQuantity" className="flex items-center text-sm font-medium text-gray-700">
-                <AlertCircle className="mr-2 text-gray-500" />
-                オーバーフロー数量
-              </label>
-              <input
-                id="overflowQuantity"
-                type="number"
-                value={overflowQuantity}
-                onChange={(e) => setOverflowQuantity(Number(e.target.value))}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                min={0}
-                placeholder="オーバーフロー数量を入力"
-              />
-            </div>
-
-            <div className="mt-6 flex justify-between">
+            <div className="mt-6 flex justify-end">
               <button
-                className="flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                 onClick={handleOverflowSubmit}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center space-x-2"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? (
-                  <>
-                    <RefreshCw className="mr-2 animate-spin" />
-                    登録中...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2" />
-                    登録
-                  </>
-                )}
+                <CheckCircle size={18} />
+                <span>{isSubmitting ? "登録中..." : "登録"}</span>
               </button>
 
               <button
-                className="flex items-center px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                 onClick={() => setIsOverflowModalOpen(false)}
+                className="ml-4 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 flex items-center space-x-2"
               >
-                <X className="mr-2" />
-                閉じる
+                <XCircle size={18} />
+                <span>閉じる</span>
               </button>
             </div>
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 };
