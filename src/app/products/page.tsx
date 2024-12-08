@@ -21,13 +21,17 @@ type Product = {
   box_type: string;
 };
 
+type ProductDetail = Product & {
+  location_capacity: number;
+};
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // デバウンス処理
@@ -75,10 +79,10 @@ export default function ProductsPage() {
         .from("product")
         .select("*")
         .eq("id", id)
-        .single();
+        .single<ProductDetail>();
 
       if (error) throw error;
-      setSelectedProduct(data);
+      setSelectedProduct(data as ProductDetail);
     } catch (error) {
       console.error("Error fetching product details:", error);
     }
