@@ -14,9 +14,9 @@ export default function Header() {
           <ul className="flex space-x-6 items-center">
             {[
               { href: "/products", icon: Box, label: "品番検索" },
-              { href: "/inventory", icon: Home, label: "在庫確認" },
+              { href: "/inventory", icon: Home, label: "在庫確認依頼" },
               { href: "/overflow", icon: Layers, label: "オーバーフロー" },
-              { href: "/overflow-analysis-page", icon: ClipboardList, label: "オーバーフロー一覧" }
+              { href: "/overflow-analysis-page", icon: ClipboardList, label: "オーバーフロー管理" }
             ].map(({ href, icon: Icon, label }) => (
               <li key={href}>
                 <Link 

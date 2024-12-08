@@ -5,7 +5,6 @@ import "../globals.css";
 import { supabase } from "../../../utils/supabase"; // Supabaseクライアントをインポート
 import Header from "../components/Header";
 import { CheckCircle, XCircle, Clock, Loader2 } from "lucide-react"; // Lucideアイコンをインポート
-import ProtectedRoute from "../components/ProtectedRoute";
 
 type StockRequest = {
   id: number;
@@ -50,7 +49,6 @@ export default function InventoryPage() {
     fetchStockRequests();
   }, []);
 
-  console.log(stockRequests);
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -61,7 +59,6 @@ export default function InventoryPage() {
   }
 
   return (
-    <ProtectedRoute>
       <div>
         <Header />
         <div className="container mx-auto p-6">
@@ -102,6 +99,5 @@ export default function InventoryPage() {
           )}
         </div>
       </div>
-    </ProtectedRoute>
   );
 }

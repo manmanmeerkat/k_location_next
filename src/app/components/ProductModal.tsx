@@ -6,6 +6,7 @@ type ProductDetail = {
   product_number: string;
   location_number: string;
   box_type: string;
+  location_capacity: number;
 };
 
 type ModalProps = {
@@ -108,6 +109,10 @@ const ProductModal = ({ product, onClose }: ModalProps) => {
           <p className="flex items-center space-x-2">
             <ClipboardList size={18} className="text-orange-500" />
             <span className="font-bold">箱種:</span> <span>{product.box_type}</span>
+          </p>
+          <p className="flex items-center space-x-2">
+            <ClipboardList size={18} className="text-yellow-500" />
+            <span className="font-bold">ロケーション容量:</span> <span>{product.location_capacity}</span>
           </p>
         </div>
 
