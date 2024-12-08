@@ -26,7 +26,7 @@ export default function LoginPage() {
     if (error) {
       setError("ログインに失敗しました: " + error.message);
     } else {
-      router.push("/dashboard");
+      router.push("/products");
     }
 
     setLoading(false);
