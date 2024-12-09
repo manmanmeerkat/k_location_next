@@ -100,7 +100,7 @@ const currentPageData = detailData.slice(
             <div className="bg-indigo-600 text-white px-6 py-5 flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                 <Table className="w-8 h-8" />
-                <h2 className="text-2xl font-bold">オーバーフロー統計ダッシュボード</h2>
+                <h2 className="text-2xl font-bold">オーバーフロー管理ダッシュボード</h2>
                 </div>
                 <div className="flex items-center space-x-3">
                 <button 

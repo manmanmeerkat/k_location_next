@@ -64,6 +64,7 @@ const ProductModal = ({ product, onClose }: ModalProps) => {
       {
         product_number: product.product_number,
         location_number: product.location_number,
+        box_type: product.box_type,
         overflow_quantity: overflowQuantity,
         registered_at: registeredAt,
       },
