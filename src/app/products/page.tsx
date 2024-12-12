@@ -5,13 +5,7 @@ import { supabase } from "../../../utils/supabase";
 import Header from "../components/Header";
 import "../globals.css";
 import ProductModal from "../components/ProductModal";
-import { 
-  Search, 
-  ChevronLeft, 
-  ChevronRight, 
-  Table as TableIcon, 
-  Package 
-} from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Package } from "lucide-react";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 type Product = {
@@ -33,6 +27,7 @@ export default function ProductsPage() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // デバウンス処理
   useEffect(() => {
@@ -45,6 +40,8 @@ export default function ProductsPage() {
   // 製品フェッチ
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
+
     try {
       const query = supabase
         .from("product")
@@ -61,8 +58,9 @@ export default function ProductsPage() {
 
       setProducts(data || []);
       setTotalPages(Math.ceil((count || 0) / 10));
-    } catch (error) {
-      console.error("Error fetching products:", error);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setError("製品情報を取得できませんでした。");
     } finally {
       setIsLoading(false);
     }
@@ -73,18 +71,21 @@ export default function ProductsPage() {
   }, [fetchProducts]);
 
   // 製品詳細フェッチ
-  const fetchProductDetails = async (id: number) => {
+  const fetchProductDetails = async (product_number: string) => {
     try {
+      setError(null);
       const { data, error } = await supabase
         .from("product")
         .select("*")
-        .eq("id", id)
+        .eq("product_number", product_number)
         .single<ProductDetail>();
 
       if (error) throw error;
+
       setSelectedProduct(data as ProductDetail);
-    } catch (error) {
-      console.error("Error fetching product details:", error);
+    } catch (err) {
+      console.error("Error fetching product details:", err);
+      setError("製品詳細を取得できませんでした。");
     }
   };
 
@@ -99,6 +100,13 @@ export default function ProductsPage() {
               <Package className="w-8 h-8" />
               <h1 className="text-2xl font-bold">品番検索</h1>
             </div>
+
+            {/* エラーメッセージ */}
+            {error && (
+              <div className="p-4 bg-red-100 text-red-600 rounded-lg">
+                {error}
+              </div>
+            )}
 
             {/* 検索バー */}
             <div className="p-6 bg-gray-50 border-b border-gray-200">
@@ -121,9 +129,9 @@ export default function ProductsPage() {
               <table className="w-full">
                 <thead className="bg-gray-100 border-b">
                   <tr>
-                    {['ID', '品番', 'ロケーション番号'].map((header) => (
-                      <th 
-                        key={header} 
+                    {["ID", "品番", "ロケーション番号"].map((header) => (
+                      <th
+                        key={header}
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
                         {header}
@@ -135,18 +143,15 @@ export default function ProductsPage() {
                   {isLoading ? (
                     <tr>
                       <td colSpan={3} className="text-center py-4">
-                        <div className="flex justify-center items-center space-x-2">
-                          <TableIcon className="animate-pulse text-gray-400" />
-                          <span>データを読み込んでいます...</span>
-                        </div>
+                        データを読み込んでいます...
                       </td>
                     </tr>
                   ) : (
                     products.map((product) => (
                       <tr 
-                        key={product.id} 
+                        key={product.product_number} 
                         className="hover:bg-gray-50 transition-colors border-b last:border-b-0 cursor-pointer"
-                        onClick={() => fetchProductDetails(product.id)}
+                        onClick={() => fetchProductDetails(product.product_number)}
                       >
                         <td className="px-6 py-4 text-sm text-gray-600">{product.id}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{product.product_number}</td>
@@ -161,7 +166,7 @@ export default function ProductsPage() {
             {/* ページネーション */}
             <div className="p-6 bg-gray-50 flex justify-center items-center space-x-4">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 className="p-2 rounded-full bg-indigo-500 text-white disabled:bg-gray-300 hover:bg-indigo-600 transition-colors"
               >
@@ -171,7 +176,7 @@ export default function ProductsPage() {
                 {currentPage} / {totalPages}
               </span>
               <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className="p-2 rounded-full bg-indigo-500 text-white disabled:bg-gray-300 hover:bg-indigo-600 transition-colors"
               >

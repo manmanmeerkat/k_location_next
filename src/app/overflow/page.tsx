@@ -10,10 +10,8 @@ import { supabase } from "../../../utils/supabase";
 type OverflowData = {
   product_number: string;
   location_number: string;
-  count: number;
-  created_at: string;
   overflow_quantity: number;
-  id: string;
+  created_at: string;
   box_type: string;
 };
 
@@ -28,15 +26,45 @@ const OverflowList = () => {
       setLoading(true);
       setError(null);
 
-      const { data, error } = await supabase.rpc("get_overflow_counts");
+      // まず overflow_management テーブルからデータを取得
+      const { data: overflowData, error } = await supabase
+        .from("overflow_management")
+        .select("product_number, overflow_quantity, created_at");
 
       if (error) {
-        setError("データの取得に失敗しました。");
+        setError("オーバーフロー管���データの取得に失敗しました。");
         console.error("Error fetching overflow data:", error.message);
-      } else {
-        setOverflowData(data || []);
+        setLoading(false);
+        return;
       }
 
+      // 次に products テーブルから location_number と box_type を取得
+      const { data: productData, error: productError } = await supabase
+        .from("product")
+        .select("product_number, location_number, box_type");
+
+      if (productError) {
+        setError("製品データの取得に失敗しました。");
+        console.error("Error fetching product data:", productError.message);
+        setLoading(false);
+        return;
+      }
+
+      // overflowData と productData を結合
+      const mergedData: OverflowData[] = overflowData.map((overflowItem) => {
+        const productItem = productData.find(
+          (product) => product.product_number === overflowItem.product_number
+        );
+
+        // location_number と box_type を確実に追加
+        return {
+          ...overflowItem,
+          location_number: productItem?.location_number || "", // productItemが見つからない場合は空文字を設定
+          box_type: productItem?.box_type || "", // productItemが見つからない場合は空文字を設定
+        };
+      });
+
+      setOverflowData(mergedData); // 型を OverflowData[] にする
       setLoading(false);
     };
 
@@ -45,21 +73,26 @@ const OverflowList = () => {
 
   // 削除処理
   const handleDelete = async (product_number: string, location_number: string, created_at: string) => {
-    // 確認アラートを表示
     const confirmDelete = window.confirm(
       `品番: ${product_number}, ロケーション番号: ${location_number}, オーバーフロー日時: ${new Date(created_at).toLocaleString()} を削除しますか？`
     );
-
+  
     if (!confirmDelete) {
-      return; // ユーザーがキャンセルを選択した場合、処理を中断
+      return;
     }
-
-    const { error } = await supabase.rpc("soft_delete_overflow", {
-      product_number_arg: product_number,
-      location_number_arg: location_number,
-      created_at_arg: created_at, // created_atも引数として渡す
-    });
-
+  
+    const now = new Date().toISOString();
+    
+    // DELETEではなくUPDATEを使用してソフトデリート
+    const { error } = await supabase
+      .from("overflow_management")
+      .update({
+        is_deleted: true,
+        deleted_at: now
+      })
+      .eq("product_number", product_number)
+      .eq("created_at", created_at);
+  
     if (error) {
       console.error("Error deleting overflow item:", error.message);
       setError("削除に失敗しました。");
@@ -68,13 +101,11 @@ const OverflowList = () => {
         prevData.filter(
           (item) =>
             item.product_number !== product_number ||
-            item.location_number !== location_number ||
-            item.created_at !== created_at // created_atでさらにフィルタリング
+            item.created_at !== created_at
         )
       );
     }
   };
-  console.log("item", overflowData);
 
   return (
     <ProtectedRoute>

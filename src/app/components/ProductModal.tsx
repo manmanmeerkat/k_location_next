@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { supabase } from "../../../utils/supabase";
 import { XCircle, CheckCircle, Layers, Package, ClipboardList } from "lucide-react";
 
+// Productテーブルの定義に基づいた型
 type ProductDetail = {
-  product_number: string;
-  location_number: string;
-  box_type: string;
-  location_capacity: number;
+  product_number: string;  // 製品番号
+  location_number: string; // ロケーション番号
+  box_type: string;        // 箱種
+  location_capacity: number; // ロケーション容量
 };
 
 type ModalProps = {
@@ -33,15 +34,14 @@ const ProductModal = ({ product, onClose }: ModalProps) => {
       alert("ユーザーが認証されていません。");
       return;
     }
+
     // 在庫確認依頼の登録
-    const { error: insertError } = await supabase.from("stock_requests").insert([
-      {
-        product_number: product.product_number,
-        requested_at: new Date().toISOString(),
-        status: "pending",
-        requested_by: user.user_metadata.displayName, // ユーザーのメールアドレスを使用
-      },
-    ]);
+    const { error: insertError } = await supabase.from("stock_requests").insert([{
+      product_number: product.product_number,
+      requested_at: new Date().toISOString(),
+      status: "pending",
+      requested_by: user.user_metadata.displayName, // ユーザーの表示名
+    }]);
 
     if (insertError) {
       console.error("Error registering stock request:", insertError);
@@ -58,17 +58,11 @@ const ProductModal = ({ product, onClose }: ModalProps) => {
 
     setIsSubmitting(true);
 
-    const registeredAt = new Date().toISOString();
 
-    const { error } = await supabase.from("overflow_management").insert([
-      {
-        product_number: product.product_number,
-        location_number: product.location_number,
-        box_type: product.box_type,
-        overflow_quantity: overflowQuantity,
-        registered_at: registeredAt,
-      },
-    ]);
+    const { error } = await supabase.from("overflow_management").insert([{
+      product_number: product.product_number,
+      overflow_quantity: overflowQuantity,
+    }]);
 
     setIsSubmitting(false);
 
