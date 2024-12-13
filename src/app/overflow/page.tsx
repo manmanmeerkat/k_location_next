@@ -25,49 +25,49 @@ const OverflowList = () => {
     const fetchOverflowData = async () => {
       setLoading(true);
       setError(null);
-
-      // まず overflow_management テーブルからデータを取得
+  
+      // is_deleted = false のデータのみを取得
       const { data: overflowData, error } = await supabase
         .from("overflow_management")
-        .select("product_number, overflow_quantity, created_at");
-
+        .select("product_number, overflow_quantity, created_at")
+        .eq('is_deleted', false);  // この行を追加
+  
       if (error) {
-        setError("オーバーフロー管���データの取得に失敗しました。");
+        setError("オーバーフロー管理データの取得に失敗しました。");
         console.error("Error fetching overflow data:", error.message);
         setLoading(false);
         return;
       }
-
+  
       // 次に products テーブルから location_number と box_type を取得
       const { data: productData, error: productError } = await supabase
         .from("product")
         .select("product_number, location_number, box_type");
-
+  
       if (productError) {
         setError("製品データの取得に失敗しました。");
         console.error("Error fetching product data:", productError.message);
         setLoading(false);
         return;
       }
-
+  
       // overflowData と productData を結合
       const mergedData: OverflowData[] = overflowData.map((overflowItem) => {
         const productItem = productData.find(
           (product) => product.product_number === overflowItem.product_number
         );
-
-        // location_number と box_type を確実に追加
+  
         return {
           ...overflowItem,
-          location_number: productItem?.location_number || "", // productItemが見つからない場合は空文字を設定
-          box_type: productItem?.box_type || "", // productItemが見つからない場合は空文字を設定
+          location_number: productItem?.location_number || "",
+          box_type: productItem?.box_type || "",
         };
       });
-
-      setOverflowData(mergedData); // 型を OverflowData[] にする
+  
+      setOverflowData(mergedData);
       setLoading(false);
     };
-
+  
     fetchOverflowData();
   }, []);
 

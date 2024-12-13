@@ -26,9 +26,10 @@ interface OverflowDetail {
   overflow_date: string;
   deleted_after_days: number | null;
   quantity: number;
+  overflow_reason: string;
 }
 
-// Components
+// DateRangeSelector Component
 const DateRangeSelector = ({ 
   startDate, 
   endDate, 
@@ -68,6 +69,7 @@ const DateRangeSelector = ({
   </div>
 );
 
+// DetailModal Component
 const DetailModal = ({
   isOpen,
   onClose,
@@ -94,7 +96,7 @@ const DetailModal = ({
       <div className="relative w-full max-w-4xl p-8 bg-white rounded-2xl shadow-2xl transform scale-95 transition-transform duration-300 hover:scale-100">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-2xl font-bold text-gray-900">
-            品番 {productNumber} の詳細
+            品番 {productNumber} のオーバーフロー履歴
           </h3>
           <button
             onClick={onClose}
@@ -110,15 +112,21 @@ const DetailModal = ({
               {currentPageData.map((detail, i) => (
                 <div
                   key={i}
-                  className="flex flex-col md:flex-row justify-between items-start p-4 bg-gray-50 rounded-lg shadow hover:shadow-md transition-shadow"
+                  className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg shadow hover:shadow-md transition-shadow"
                 >
-                  <div className="mb-4 md:mb-0">
+                  <div>
                     <p className="text-sm text-gray-500">オーバーフロー発生日:</p>
                     <p className="text-lg font-semibold text-gray-800">
-                      {detail.overflow_date}
+                      {new Date(detail.overflow_date).toLocaleString()}
                     </p>
                   </div>
-                  <div className="mb-4 md:mb-0">
+                  <div>
+                    <p className="text-sm text-gray-500">オーバーフローの理由:</p>
+                    <p className="text-lg font-semibold text-gray-800">
+                      {detail.overflow_reason}
+                    </p>
+                  </div>
+                  <div>
                     <p className="text-sm text-gray-500">解消までの日数:</p>
                     <p className="text-lg font-semibold text-gray-800">
                       {detail.deleted_after_days !== null
@@ -127,9 +135,9 @@ const DetailModal = ({
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">数量:</p>
+                    <p className="text-sm text-gray-500">オーバーフロー数量:</p>
                     <p className="text-lg font-semibold text-gray-800">
-                      {detail.quantity}
+                      {detail.quantity} 個
                     </p>
                   </div>
                 </div>
@@ -174,6 +182,7 @@ const DetailModal = ({
   );
 };
 
+// Main Component
 const OverflowStats = () => {
   const [overflowData, setOverflowData] = useState<OverflowItem[]>([]);
   const [detailData, setDetailData] = useState<OverflowDetail[]>([]);
@@ -235,11 +244,6 @@ const OverflowStats = () => {
     fetchOverflowStats();
   }, [fetchOverflowStats]);
 
-  const closeModal = () => {
-    setShowModal(false);
-    setDetailData([]);
-  };
-
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -249,7 +253,7 @@ const OverflowStats = () => {
             <div className="bg-indigo-600 text-white px-6 py-5 flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Table className="w-8 h-8" />
-                <h2 className="text-2xl font-bold">オーバーフロー管理ダッシュボード</h2>
+                <h2 className="text-2xl font-bold">オーバーフロー分析</h2>
               </div>
               <div className="flex items-center space-x-3">
                 <button 
@@ -326,7 +330,11 @@ const OverflowStats = () => {
 
         <DetailModal
           isOpen={showModal}
-          onClose={closeModal}
+          onClose={() => {
+            setShowModal(false);
+            setDetailData([]);
+            setCurrentPage(0);
+          }}
           productNumber={selectedProduct || ''}
           details={detailData}
           currentPage={currentPage}
