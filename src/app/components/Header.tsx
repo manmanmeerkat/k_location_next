@@ -1,5 +1,7 @@
 import Link from 'next/link';
-import { Box, Home, Layers, ClipboardList } from 'lucide-react';
+import { Box, Home, Layers, ClipboardList, QrCode } from 'lucide-react';  // QrCodeアイコンを追加
+import "../globals.css";
+
 
 export default function Header() {
   return (
@@ -14,18 +16,19 @@ export default function Header() {
           <ul className="flex space-x-6 items-center">
             {[
               { href: "/products", icon: Box, label: "品番検索" },
-              { href: "/inventory", icon: Home, label: "在庫確認依頼" },
+              { href: "/inventory", icon: Home, label: "在庫確認状況" },
               { href: "/overflow", icon: Layers, label: "オーバーフロー" },
-              { href: "/overflow-analysis-page", icon: ClipboardList, label: "オーバーフロー管理" }
+              { href: "/overflow-analysis-page", icon: ClipboardList, label: "オーバーフロー管理" },
+              { href: "/qr-codes", icon: QrCode, label: "QRコード履歴" }  // 追加
             ].map(({ href, icon: Icon, label }) => (
               <li key={href}>
-                <Link 
-                  href={href} 
+                <Link
+                  href={href}
                   aria-label={`${label}ページへ移動`}
                   className="flex items-center space-x-2 text-white/90 hover:text-white transition-all duration-300 group"
                 >
-                  <Icon 
-                    size={18} 
+                  <Icon
+                    size={18}
                     strokeWidth={2}
                     className="group-hover:scale-110 transition-transform duration-300"
                   />
