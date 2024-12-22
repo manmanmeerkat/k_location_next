@@ -25,7 +25,9 @@ export default function ProductsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,7 +131,7 @@ export default function ProductsPage() {
               <table className="w-full">
                 <thead className="bg-gray-100 border-b">
                   <tr>
-                    {["ID", "品番", "ロケーション番号"].map((header) => (
+                    {["品番", "ロケーション番号"].map((header) => (
                       <th
                         key={header}
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -148,14 +150,19 @@ export default function ProductsPage() {
                     </tr>
                   ) : (
                     products.map((product) => (
-                      <tr 
-                        key={product.product_number} 
+                      <tr
+                        key={product.product_number}
                         className="hover:bg-gray-50 transition-colors border-b last:border-b-0 cursor-pointer"
-                        onClick={() => fetchProductDetails(product.product_number)}
+                        onClick={() =>
+                          fetchProductDetails(product.product_number)
+                        }
                       >
-                        <td className="px-6 py-4 text-sm text-gray-600">{product.id}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{product.product_number}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{product.location_number}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {product.product_number}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {product.location_number}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -176,7 +183,9 @@ export default function ProductsPage() {
                 {currentPage} / {totalPages}
               </span>
               <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
                 disabled={currentPage === totalPages}
                 className="p-2 rounded-full bg-indigo-500 text-white disabled:bg-gray-300 hover:bg-indigo-600 transition-colors"
               >
